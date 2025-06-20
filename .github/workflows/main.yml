@@ -16,7 +16,12 @@ jobs:
     - name: Install Qt and dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y qt5-default qt5-qmake build-essential
+        sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qttools5-dev-tools build-essential
+
+    - name: Verify Qt installation
+      run: |
+        qmake --version
+        which qmake
 
   build:
     needs: setup
