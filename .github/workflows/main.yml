@@ -24,7 +24,8 @@ jobs:
         qmake --version
         which make
         make --version
-
+- name: Install Qt (qmake)
+  run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
   build:
     needs: setup
     runs-on: ubuntu-latest
