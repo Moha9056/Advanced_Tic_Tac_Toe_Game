@@ -1,4 +1,5 @@
 TIC-TAC-TOE
+
 An advanced Tic Tac Toe game with user login, AI opponent using Minimax algorithm, and personal game history tracking. Built with C++ and Qt.
 
 Features
@@ -12,7 +13,7 @@ C++: Core game logic and application functionality.
 Qt: GUI development for a seamless user experience.
 SQLite: Database management for storing user data and game history.
 Getting Started
-1 - Clone the repository: 
+1 - Clone the repository: git clone https://github.com/refaat-max/TIC-_TAC_-TOE.git
 
 2 - Build the project using Qt Creator or your preferred C++ IDE or from ExecutableِApp>>AdvancedTicTacToe.exe .
 
