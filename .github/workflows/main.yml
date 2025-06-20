@@ -23,7 +23,7 @@ jobs:
         qmake --version
         which qmake
 
-   build:
+  build:
     needs: setup
     runs-on: ubuntu-latest
     steps:
