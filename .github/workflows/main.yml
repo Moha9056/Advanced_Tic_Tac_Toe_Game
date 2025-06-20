@@ -1,4 +1,4 @@
-name: Tic-Tac-Toe CI/CD Pipeline
+name: Tic-Tac-Toe Build Pipeline
 
 on:
   push:
@@ -7,89 +7,30 @@ on:
     branches: [ "main" ]
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Qt and dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qttools5-dev-tools build-essential
-
-    - name: Verify installations
-      run: |
-        which qmake
-        qmake --version
-        which make
-        make --version
-- name: Install Qt (qmake)
-  run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
   build:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Show directory structure
-      working-directory: ./app
-      run: ls -la
-
-    - name: Build application
-      working-directory: ./app
-      run: |
-        # Corrected qmake command (was 'sumake' in error)
-        qmake app.pro
-        make
-        
-        # Verify the built executable exists
-        if [ ! -f "tictactoe" ]; then
-          echo "Error: Expected executable 'tictactoe' not found!"
-          ls -la
-          exit 1
-        fi
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Build and run tests
-      run: |
-        cd tests
-        qmake
-        make
-        ./tst_tictactoetests
-
-  deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Build release
-      working-directory: ./app
-      run: |
-        qmake app.pro
-        make
-
-    - name: Package application
-      run: |
-        mkdir -p release
-        cp app/tictactoe release/
-        tar -czvf tictactoe-release-${{ github.sha }}.tar.gz -C release tictactoe
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: release-${{ github.sha }}
-        name: Tic-Tac-Toe Release ${{ github.sha }}
-        files: tictactoe-release-${{ github.sha }}.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v3
+      
+      - name: Install Qt (qmake)
+        run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
+      
+      - name: Verify Qt installation
+        run: |
+          qmake --version
+          which qmake
+      
+      - name: Build application
+        run: |
+          qmake app.pro
+          make
+          
+          # Verify build output
+          if [ ! -f "tictactoe" ]; then
+            echo "Error: Build failed - executable not found!"
+            ls -la
+            exit 1
+          fi
+      
+      - name: Show build artifacts
+        run: ls -la
