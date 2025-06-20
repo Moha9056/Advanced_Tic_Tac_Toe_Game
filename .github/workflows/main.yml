@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Tic-Tac-Toe
+name: Tic-Tac-Toe CI/CD Pipeline
 
 on:
   push:
@@ -7,95 +7,69 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: Checkout the repository
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Step 2: Install Qt and dependencies
-    - name: Install Qt and build tools
+    - name: Install Qt and dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y qt5-default qt5-qmake build-essential
 
-    # Step 3: Build the main application
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Build application
+      working-directory: ./app
       run: |
-        cd app
         qmake
         make
-        cd ..
 
   test:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: Checkout the repository
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Step 2: Install Qt and dependencies
-    - name: Install Qt and build tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qt5-default qt5-qmake build-essential
-
-    # Step 3: Build both application and tests
-    - name: Build project with tests
+    - name: Build and run tests
       run: |
         qmake TicTacToe_With_Tests.pro CONFIG+=test
         make
-
-    # Step 4: Run the unit tests
-    - name: Run tests
-      run: |
         cd tests
         ./tst_tictactoetests
-        cd ..
 
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: Checkout the repository
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Step 2: Install Qt and dependencies
-    - name: Install Qt and build tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qt5-default qt5-qmake build-essential
-
-    # Step 3: Build the release version
     - name: Build release version
+      working-directory: ./app
       run: |
-        cd app
         qmake
         make
-        cd ..
 
-    # Step 4: Package the binary
     - name: Package application
       run: |
         mkdir -p release
-        cp app/tictactoe_app release/
-        tar -czvf tictactoe-${{ github.sha }}.tar.gz -C release tictactoe_app
+        cp app/tictactoe release/
+        tar -czvf tictactoe-release-${{ github.sha }}.tar.gz -C release tictactoe
 
-    # Step 5: Create release
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: release-${{ github.sha }}
-        name: Release ${{ github.sha }}
-        draft: false
-        prerelease: false
-        files: tictactoe-${{ github.sha }}.tar.gz
+        name: Tic-Tac-Toe Release ${{ github.sha }}
+        files: tictactoe-release-${{ github.sha }}.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
