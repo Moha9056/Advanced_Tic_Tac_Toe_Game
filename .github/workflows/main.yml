@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Advanced Tic Tac Toe
+name: C++ CI/CD with CMake
 
 on:
   push:
@@ -6,58 +6,37 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  BUILD_DIR: "build"
-
 jobs:
   build-and-test:
-    name: Build and Test (${{ matrix.os }})
+    name: Build and Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            qt-pkg: qt6-base-dev
-            install-cmd: sudo apt-get install -y
-          - os: windows-latest
-            qt-pkg: qt6
-            install-cmd: choco install
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up CMake (Fixed Version)
-        uses: actions/setup-cmake@v3  # Corrected from invalid @x3
+    - name: Set up CMake
+      uses: azyobuzin/setup-cmake@v1
+      with:
+        # Specify the version of CMake you need, e.g., '3.28.0'
+        # If not specified, the latest version will be used.
+        version: 'latest' 
 
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} g++ cmake
+    - name: Configure CMake
+      # This step creates the build directory and generates the build files.
+      # For Windows, it will default to Visual Studio generators.
+      # For Linux, it will default to Makefiles.
+      run: cmake -B ${{ github.workspace }}/build -S ${{ github.workspace }}
 
-      - name: Install dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} cmake -y
+    - name: Build project
+      # This step compiles your project using the generated build files.
+      run: cmake --build ${{ github.workspace }}/build
 
-      - name: Configure project
-        run: |
-          mkdir -p ${{ env.BUILD_DIR }}
-          cd ${{ env.BUILD_DIR }}
-          cmake ..
-
-      - name: Build project
-        run: |
-          cd ${{ env.BUILD_DIR }}
-          cmake --build . --config Release
-
-      - name: Run tests
-        working-directory: ${{ env.BUILD_DIR }}
-        run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            ctest -C Release --output-on-failure
-          else
-            ctest --output-on-failure
-          fi
+    - name: Run tests
+      # This step executes the tests. It assumes you have defined tests
+      # with CTest as part of your CMake configuration.
+      working-directory: ${{ github.workspace }}/build
+      run: ctest -C Debug --output-on-failure
