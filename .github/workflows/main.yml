@@ -1,52 +1,27 @@
-name: C++ Qt Build and Test
+name: Build and Test C++ Project
 
-on:
-  push:
-    branches:
-      - main # This should match your primary branch name (from screenshot, it's 'main')
-  pull_request:
-    branches:
-      - main # This should match your primary branch name
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # You can also try 'windows-latest' if you prefer a Windows build environment
-
+  build-and-test:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4 # Uses the latest version of the checkout action
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-    - name: Install Qt (for Ubuntu)
-      # This step assumes a standard Qt6 installation on Ubuntu.
-      # If your Qt version is different, or you encounter issues, this part might need adjustment.
+    - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y qt6-base-dev qt6-base-dev-tools qt6-sql-sqlite libsqlite3-dev build-essential git
-        echo "QT_SELECT=qt6" | sudo tee -a /etc/environment # Ensure qt6 is default if multiple Qt versions present
+        sudo apt-get install -y cmake g++ libgtest-dev
 
-    - name: Configure main project with qmake
-      # Assuming your main .pro file is TicTacToe_With_Tests.pro in the root directory
-      run: qmake TicTacToe_With_Tests.pro -o Makefile.main
+    - name: Build Project
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
 
-    - name: Configure tests project with qmake
-      # Assuming your tests .pro file is tests/tests.pro
-      run: qmake tests/tests.pro -o tests/Makefile.tests
-
-    - name: Build main project
-      run: make -f Makefile.main -j$(nproc)
-
-    - name: Build tests project
-      run: make -f tests/Makefile.tests -j$(nproc)
-
-    - name: Run tests
-      # Assuming your test executable is built into the 'tests/debug/' or 'tests/' directory
-      # The exact path depends on your build system's output.
-      # For Debug builds on Linux, it's often directly in the project build folder.
-      run: ./tests/debug/tests.exe # Use the path to your test runner executable (e.g., tests/debug/tests)
-
-    # Optional: Add steps to upload build artifacts (e.g., your compiled game executable)
-    # - name: Upload application executable
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: tic-tac-toe-app
-    #     path: build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/app/debug/app.exe # Adjust path to your main application executable
+    - name: Run Tests
+      run: |
+        cd build
+        ctest --output-on-failure
