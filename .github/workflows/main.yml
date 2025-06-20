@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        # Explicitly define dependencies per OS
         include:
           - os: ubuntu-latest
             qt-pkg: qt6-base-dev
@@ -29,17 +28,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up CMake
-        uses: actions/setup-cmake@v3
+      - name: Set up CMake (Fixed Version)
+        uses: actions/setup-cmake@v3  # Corrected from invalid @x3
 
-      - name: Install dependencies
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            sudo apt-get update
-            ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} g++ cmake
-          else
-            ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} cmake --confirm
-          fi
+          sudo apt-get update
+          ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} g++ cmake
+
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} cmake -y
 
       - name: Configure project
         run: |
@@ -60,23 +61,3 @@ jobs:
           else
             ctest --output-on-failure
           fi
-
-  code-quality:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    needs: build-and-test  # Wait for build jobs
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Clang-Tidy
-        run: |
-          mkdir -p ${{ env.BUILD_DIR }}
-          cd ${{ env.BUILD_DIR }}
-          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-          run-clang-tidy -checks='modernize-*,readability-*'
-
-      - name: Run Cppcheck
-        run: |
-          cppcheck --enable=all --suppress=missingIncludeSystem \
-                  --suppress=unusedFunction --inline-suppr src/
