@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Advanced Tic Tac Toe (Windows & Ubuntu)
+name: CI/CD Pipeline - Advanced Tic Tac Toe
 
 on:
   push:
@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        # Explicitly define dependencies per OS
         include:
           - os: ubuntu-latest
             qt-pkg: qt6-base-dev
@@ -31,19 +32,15 @@ jobs:
       - name: Set up CMake
         uses: actions/setup-cmake@v3
 
-      # Platform-specific dependency installation
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} g++ cmake
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            sudo apt-get update
+            ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} g++ cmake
+          else
+            ${{ matrix.install-cmd }} ${{ matrix.qt-pkg }} cmake --confirm
+          fi
 
-      - name: Install dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install ${{ matrix.qt-pkg }} cmake -y
-
-      # Build steps
       - name: Configure project
         run: |
           mkdir -p ${{ env.BUILD_DIR }}
@@ -55,7 +52,6 @@ jobs:
           cd ${{ env.BUILD_DIR }}
           cmake --build . --config Release
 
-      # Test execution
       - name: Run tests
         working-directory: ${{ env.BUILD_DIR }}
         run: |
@@ -66,9 +62,9 @@ jobs:
           fi
 
   code-quality:
-    name: Code Quality Checks (Ubuntu Only)
+    name: Code Quality Checks
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: build-and-test  # Wait for build jobs
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
