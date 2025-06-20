@@ -23,7 +23,7 @@ jobs:
         qmake --version
         which qmake
 
-  build:
+   build:
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -33,8 +33,20 @@ jobs:
     - name: Build application
       working-directory: ./app
       run: |
-        qmake
+        # Explicitly specify qmake path
+        /usr/bin/qmake -v
+        /usr/bin/qmake
         make
+        ls -la  # Show build output for debugging
+
+    - name: Verify build output
+      run: |
+        if [ -f "./app/tictactoe" ]; then
+          echo "Build successful - executable exists"
+        else
+          echo "Build failed - no executable found"
+          exit 1
+        fi
 
   test:
     needs: build
