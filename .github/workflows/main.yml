@@ -13,15 +13,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Qt and dependencies
+    - name: Install Qt and build tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qttools5-dev-tools build-essential
-
-    - name: Verify Qt installation
+        sudo apt-get install -y qtbase5-dev qt5-qmake qtchooser qttools5-dev-tools build-essential cmake
+        
+    - name: Verify installations
       run: |
-        qmake --version
-        which qmake
+        which qmake || echo "qmake not found"
+        qmake --version || echo "qmake version check failed"
+        which make || echo "make not found"
+        make --version || echo "make version check failed"
 
   build:
     needs: setup
@@ -33,20 +35,23 @@ jobs:
     - name: Build application
       working-directory: ./app
       run: |
-        # Explicitly specify qmake path
-        /usr/bin/qmake -v
-        /usr/bin/qmake
-        make
-        ls -la  # Show build output for debugging
-
-    - name: Verify build output
-      run: |
-        if [ -f "./app/tictactoe" ]; then
-          echo "Build successful - executable exists"
-        else
-          echo "Build failed - no executable found"
+        # Debug: Show directory contents
+        ls -la
+        
+        # Explicit paths for tools
+        /usr/bin/qmake || { echo "qmake failed"; exit 1; }
+        /usr/bin/make || { echo "make failed"; exit 1; }
+        
+        # Verify build output
+        if [ ! -f "tictactoe" ]; then
+          echo "Error: Build failed - executable not found"
+          ls -la
           exit 1
         fi
+
+    - name: Show build artifacts
+      run: |
+        ls -la ./app
 
   test:
     needs: build
@@ -57,9 +62,15 @@ jobs:
 
     - name: Build and run tests
       run: |
-        qmake TicTacToe_With_Tests.pro CONFIG+=test
-        make
+        /usr/bin/qmake TicTacToe_With_Tests.pro CONFIG+=test || { echo "Test qmake failed"; exit 1; }
+        /usr/bin/make || { echo "Test make failed"; exit 1; }
+        
         cd tests
+        if [ ! -f "tst_tictactoetests" ]; then
+          echo "Error: Test executable not found"
+          ls -la
+          exit 1
+        fi
         ./tst_tictactoetests
 
   deploy:
@@ -70,15 +81,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Build release version
+    - name: Build release
       working-directory: ./app
       run: |
-        qmake
-        make
+        /usr/bin/qmake
+        /usr/bin/make
 
     - name: Package application
       run: |
         mkdir -p release
+        if [ ! -f "app/tictactoe" ]; then
+          echo "Error: Application binary not found for packaging"
+          ls -la app/
+          exit 1
+        fi
         cp app/tictactoe release/
         tar -czvf tictactoe-release-${{ github.sha }}.tar.gz -C release tictactoe
 
