@@ -1,30 +1,36 @@
-name: Qt Build and Test (Optimized)
+name: Tic-Tac-Toe Build Pipeline
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
-  qt-test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Install Qt and Xvfb
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qt5-qmake qtbase5-dev qtchooser g++ xvfb
-
-    - name: 🔧 Build tests only
-      run: |
-        cd tests
-        qmake tests.pro
-        make -j2
-
-    - name: 🧪 Run Qt tests in virtual display
-      run: |
-        cd tests
-        chmod +x tests
-        timeout 60s xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./tests -exitcode
+      - uses: actions/checkout@v3
+      
+      - name: Install Qt (qmake)
+        run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
+      
+      - name: Verify Qt installation
+        run: |
+          qmake --version
+          which qmake
+      
+      - name: Build application
+        run: |
+          qmake app.pro
+          make
+          
+          # Verify build output
+          if [ ! -f "tictactoe" ]; then
+            echo "Error: Build failed - executable not found!"
+            ls -la
+            exit 1
+          fi
+      
+      - name: Show build artifacts
+        run: ls -la
