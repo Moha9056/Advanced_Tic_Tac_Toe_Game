@@ -29,7 +29,7 @@ jobs:
         arch: 'win64_msvc2022_64'
 
     - name: Configure project (Release build)
-      run: qmake TicTest.pro -spec win32-msvc "CONFIG+=release"
+      run: qmake tests.pro -spec win32-msvc "CONFIG+=release"
       shell: cmd
 
     - name: Build project (Release build)
@@ -38,7 +38,7 @@ jobs:
 
     - name: Deploy Qt dependencies (windeployqt)
       run: |
-        windeployqt TicTest.exe
+        windeployqt tests.exe
       working-directory: ${{ github.workspace }}\release
       shell: cmd
 
