@@ -1,25 +1,59 @@
-name: Tic-Tac-Toe Build Pipeline
+name: Tic Tac Toe CI/CD with GUI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+  release:
+    types: [published]
 
 jobs:
   build:
-    - name: Build application (debug)
-  run: |
-    set -euxo pipefail
-    echo "Current directory:"
-    pwd
-    echo "Files in root:"
-    ls -la
-    echo "Running qmake..."
-    qmake app.pro
-    echo "Running make..."
-    make VERBOSE=1
-    echo "Files after make:"
-    ls -la
-    echo "All executables:"
-    find . -type f -executable -ls
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC compiler
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Qt 6.8.3 (MSVC 2022 64-bit)
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.8.3'
+        target: desktop
+        arch: 'win64_msvc2022_64'
+
+    - name: Configure project (Release build)
+      run: qmake TicTest.pro -spec win32-msvc "CONFIG+=release"
+      shell: cmd
+
+    - name: Build project (Release build)
+      run: nmake release
+      shell: cmd
+
+    - name: Deploy Qt dependencies (windeployqt)
+      run: |
+        windeployqt TicTest.exe
+      working-directory: ${{ github.workspace }}\release
+      shell: cmd
+
+    - name: Package application for release
+      run: |
+        Compress-Archive -Path release\* -DestinationPath TicTacToe-Windows-Release.zip
+      shell: powershell
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      if: github.event_name == 'release' && github.event.action == 'published'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: TicTacToe-Windows-Release.zip
+        asset_name: TicTacToe-Windows-Release.zip
+        asset_content_type: application/zip
