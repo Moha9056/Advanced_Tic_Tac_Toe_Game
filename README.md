@@ -1,32 +1,40 @@
-TIC-TAC-TOE
+# 🎮 Advanced Tic Tac Toe Game
 
-An advanced Tic Tac Toe game with user login, AI opponent using Minimax algorithm, and personal game history tracking. Built with C++ and Qt.
+An enhanced version of the classic Tic Tac Toe game featuring user authentication, an AI opponent powered by the Minimax algorithm, and personal game history tracking. Built with **C++** and **Qt** for a modern and interactive experience.
 
-Features
+---
 
-Two-player mode: Play against another player on the same device.
+## 🚀 Features
 
-AI opponent: Challenge yourself against an AI opponent with varying difficulty levels.
+- **🧑‍🤝‍🧑 Two-Player Mode**  
+  Play against a friend on the same device.
 
-User authentication: Sign up and log in to save your game progress and player statistics.
+- **🤖 AI Opponent**  
+  Challenge an AI player with multiple difficulty levels powered by the Minimax algorithm.
 
-Game history: View past game results and statistics.
+- **🔐 User Authentication**  
+  Sign up and log in to save your stats and game progress.
 
-Profile management: Update your username and password within the application.
+- **📈 Game History Tracking**  
+  Review your past games, results, and performance statistics.
 
-Technologies Used
+- **👤 Profile Management**  
+  Change your username or password from within the app.
 
-C++: Core game logic and application functionality.
+---
 
-Qt: GUI development for a seamless user experience.
+## 🛠 Technologies Used
 
-SQLite: Database management for storing user data and game history.
+- **C++** — Core game logic and functionality  
+- **Qt** — GUI framework for building the interface  
+- **SQLite** — Local database for storing user profiles and game history
 
-Getting Started
+---
 
+## ⚙️ Getting Started
 
-1 - Clone the repository: git clone https://github.com/Moha9056/Advanced_Tic_Tac_Toe_Game.git
+### 1. Clone the Repository
 
-2 - Build the project using Qt Creator or your preferred C++ IDE or from ExecutableِApp>>AdvancedTicTacToe.exe .
-
-3 - Run the application and enjoy playing Tic Tac Toe!
+```bash
+git clone https://github.com/Moha9056/Advanced_Tic_Tac_Toe_Game.git
+cd Advanced_Tic_Tac_Toe_Game
