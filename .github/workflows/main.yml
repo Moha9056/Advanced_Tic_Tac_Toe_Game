@@ -1,4 +1,4 @@
-name: Fast Qt Test CI
+name: Qt Build and Test (Optimized)
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install Qt and Xvfb (Minimal)
+    - name: Install Qt and Xvfb
       run: |
         sudo apt-get update
         sudo apt-get install -y qt5-qmake qtbase5-dev qtchooser g++ xvfb
@@ -23,8 +23,8 @@ jobs:
         qmake tests.pro
         make -j2
 
-    - name: 🧪 Run Qt tests (with timeout)
+    - name: 🧪 Run Qt tests in virtual display
       run: |
         cd tests
         chmod +x tests
-        timeout 60s xvfb-run --auto-servernum ./tests -exitcode
+        timeout 60s xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./tests -exitcode
