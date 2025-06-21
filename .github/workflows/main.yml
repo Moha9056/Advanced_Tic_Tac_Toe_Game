@@ -1,14 +1,28 @@
-#include <QtTest/QtTest>
-#include "GameLogic.h"
+name: Qt Build and Test
 
-class GameLogicTest : public QObject {
-  Q_OBJECT
+on:
+  push:
+  pull_request:
 
-private slots:
-  void testWinDetection() {
-    // your test case
-  }
-};
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
 
-QTEST_MAIN(GameLogicTest)
-#include "test_main.moc"
+    steps:
+    - name:  Checkout Repository
+      uses: actions/checkout@v3
+
+    - name:  Install Qt (qmake version)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools g++
+
+    - name: 🔧 Build using qmake and make
+      run: |
+        qmake TicTacToe_With_Tests.pro
+        make
+
+    - name: 🧪 Run Qt Tests
+      run: |
+        chmod +x tests
+        ./tests -exitcode
