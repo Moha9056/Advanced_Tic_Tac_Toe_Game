@@ -14,23 +14,29 @@ jobs:
       
       - name: Install Qt (qmake)
         run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
-      
+
       - name: Verify Qt installation
         run: |
           qmake --version
           which qmake
-      
+
       - name: Build application
         run: |
+          set -e
+          # If your .pro file is not at the repo root, change the path below
           qmake app.pro
-          make
-          
-          # Verify build output
+          make VERBOSE=1
+          ls -la
+
+          # Try to find all executables
+          echo "Listing all executable files in project directory:"
+          find . -type f -executable
+
+          # Adjust this check if your output is not named 'tictactoe'
           if [ ! -f "tictactoe" ]; then
             echo "Error: Build failed - executable not found!"
-            ls -la
             exit 1
           fi
-      
+
       - name: Show build artifacts
         run: ls -la
