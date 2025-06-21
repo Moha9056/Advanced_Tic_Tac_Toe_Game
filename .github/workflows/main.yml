@@ -1,28 +1,30 @@
-name: Qt Build and Test (with Xvfb)
+name: Fast Qt Test CI
 
 on:
   push:
   pull_request:
 
 jobs:
-  build-and-test:
+  qt-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install Qt and Xvfb
+    - name: Install Qt and Xvfb (Minimal)
       run: |
         sudo apt-get update
-        sudo apt-get install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools g++ xvfb
+        sudo apt-get install -y qt5-qmake qtbase5-dev qtchooser g++ xvfb
 
-    - name: 🔧 Build both app and tests using qmake
+    - name: 🔧 Build tests only
       run: |
-        qmake TicTacToe_With_Tests.pro
+        cd tests
+        qmake tests.pro
         make -j2
 
-    - name: 🧪 Run Qt Tests in Virtual Display (Xvfb)
+    - name: 🧪 Run Qt tests (with timeout)
       run: |
-        chmod +x tests/tests
-        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./tests/tests -exitcode
+        cd tests
+        chmod +x tests
+        timeout 60s xvfb-run --auto-servernum ./tests -exitcode
