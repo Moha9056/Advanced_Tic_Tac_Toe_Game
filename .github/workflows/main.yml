@@ -1,30 +1,28 @@
-name: Qt Build and Test
+name: Qt Test Only
 
 on:
   push:
   pull_request:
 
 jobs:
-  build-and-test:
+  qt-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Install Qt and dependencies
+    - name: Install Qt
       run: |
         sudo apt-get update
-        sudo apt-get install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools g++ xvfb
+        sudo apt-get install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools g++
 
-    - name: 🔧 Build using qmake and make
+    - name: Build Test Binary
       run: |
-        qmake TicTacToe_With_Tests.pro
-        make
-      timeout-minutes: 5
+        qmake tests.pro
+        make -j2
 
-    - name: 🧪 Run Qt Tests (Headless)
+    - name: Run Tests
       run: |
         chmod +x tests
-        xvfb-run ./tests -exitcode -v || true
-      timeout-minutes: 2
+        ./tests -exitcode
