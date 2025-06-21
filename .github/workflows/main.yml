@@ -1,36 +1,14 @@
-name: Tic-Tac-Toe Build Pipeline
+#include <QtTest/QtTest>
+#include "GameLogic.h"
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+class GameLogicTest : public QObject {
+  Q_OBJECT
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Install Qt (qmake)
-        run: sudo apt-get update && sudo apt-get install -y qt5-qmake qtbase5-dev
-      
-      - name: Verify Qt installation
-        run: |
-          qmake --version
-          which qmake
-      
-      - name: Build application
-        run: |
-          qmake app.pro
-          make
-          
-          # Verify build output
-          if [ ! -f "tictactoe" ]; then
-            echo "Error: Build failed - executable not found!"
-            ls -la
-            exit 1
-          fi
-      
-      - name: Show build artifacts
-        run: ls -la
+private slots:
+  void testWinDetection() {
+    // your test case
+  }
+};
+
+QTEST_MAIN(GameLogicTest)
+#include "test_main.moc"
