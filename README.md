@@ -13,6 +13,8 @@ C++: Core game logic and application functionality.
 Qt: GUI development for a seamless user experience.
 SQLite: Database management for storing user data and game history.
 Getting Started
+
+
 1 - Clone the repository: git clone https://github.com/Moha9056/Advanced_Tic_Tac_Toe_Game.git
 
 2 - Build the project using Qt Creator or your preferred C++ IDE or from ExecutableِApp>>AdvancedTicTacToe.exe .
