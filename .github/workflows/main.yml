@@ -23,16 +23,19 @@ jobs:
       - name: Build application
         run: |
           set -e
-          # If your .pro file is not at the repo root, change the path below
+          echo "::group::Run qmake"
           qmake app.pro
+          echo "::endgroup::"
+          echo "::group::Run make"
           make VERBOSE=1
+          echo "::endgroup::"
+          echo "::group::List all files after build"
           ls -la
-
-          # Try to find all executables
-          echo "Listing all executable files in project directory:"
+          echo "::endgroup::"
+          echo "::group::Find all executables"
           find . -type f -executable
-
-          # Adjust this check if your output is not named 'tictactoe'
+          echo "::endgroup::"
+          # Check for expected output (edit 'tictactoe' if your binary name is different)
           if [ ! -f "tictactoe" ]; then
             echo "Error: Build failed - executable not found!"
             exit 1
